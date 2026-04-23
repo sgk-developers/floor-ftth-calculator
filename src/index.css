@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+  
+  .dark {
+    color-scheme: dark;
+  }
+
+  /* Custom Scrollbar Styling */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+    transition: all 0.2s ease;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.2);
+  }
+
+  /* Dark mode scrollbar */
+  .dark ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .dark ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  /* Firefox support */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
+  }
+
+  .dark * {
+    scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+  }
+
+  body {
+    @apply bg-white transition-colors duration-500 selection:bg-purple-500/30 selection:text-white;
+  }
+
+  .dark body {
+    @apply bg-[#050505];
+  }
+}

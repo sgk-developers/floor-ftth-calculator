@@ -6,6 +6,7 @@ interface Props {
   onUpdate: (id: string, field: keyof FloorData, value: any) => void;
   onDelete: (id: string) => void;
   darkMode?: boolean;
+  selectedFloorId?: string | null;
 }
 
 const getCableBadgeClass = (type: CableType, darkMode: boolean) => {
@@ -17,7 +18,22 @@ const getCableBadgeClass = (type: CableType, darkMode: boolean) => {
   }
 };
 
-export const FloorTable: React.FC<Props> = ({ floors, onUpdate, onDelete, darkMode = true }) => {
+export const FloorTable: React.FC<Props> = ({ 
+  floors, 
+  onUpdate, 
+  onDelete, 
+  darkMode = true, 
+  selectedFloorId 
+}) => {
+  React.useEffect(() => {
+    if (selectedFloorId) {
+      const element = document.getElementById(`floor-row-${selectedFloorId}`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }, [selectedFloorId]);
+
   const totals = {
     '2"': floors.filter(f => f.cableType === '2"').reduce((acc, f) => acc + f.meters, 0),
     '4"': floors.filter(f => f.cableType === '4"').reduce((acc, f) => acc + f.meters, 0),
@@ -40,7 +56,7 @@ export const FloorTable: React.FC<Props> = ({ floors, onUpdate, onDelete, darkMo
     <div className={`overflow-x-auto rounded-2xl border transition-all duration-300 ${
       darkMode ? 'border-white/10' : 'border-slate-200 bg-white'
     }`}>
-      <table className="w-full text-left border-collapse min-w-[1000px]">
+      <table className="w-full text-left border-collapse min-w-[600px]">
         <thead>
           <tr className={`text-xs uppercase tracking-wider ${
             darkMode ? 'bg-white/5 text-neutral-400' : 'bg-slate-50 text-slate-500 border-b border-slate-200'
@@ -48,12 +64,6 @@ export const FloorTable: React.FC<Props> = ({ floors, onUpdate, onDelete, darkMo
             <th className="p-4 font-medium">ΟΡΟΦΟΣ</th>
             <th className="p-4 font-medium">ΔΙΑΜΕΡ.</th>
             <th className="p-4 font-medium">ΚΑΤΑΣΤ.</th>
-            <th className="p-4 font-medium">FB01</th>
-            <th className="p-4 font-medium">FB01 TYPE</th>
-            <th className="p-4 font-medium">FB02</th>
-            <th className="p-4 font-medium">FB02 TYPE</th>
-            <th className="p-4 font-medium">FB ΠΕΛΑΤΗ</th>
-            <th className="p-4 font-medium">GIS ID</th>
             <th className="p-4 font-medium">ΜΕΤΡΑ</th>
             <th className="p-4 font-medium">ΕΙΔΟΣ</th>
             <th className="p-4 font-medium"></th>
@@ -61,9 +71,15 @@ export const FloorTable: React.FC<Props> = ({ floors, onUpdate, onDelete, darkMo
         </thead>
         <tbody className={`divide-y ${darkMode ? 'divide-white/5' : 'divide-slate-100'}`}>
           {floors.map((floor) => (
-            <tr key={floor.id} className={`group transition-colors duration-300 ${
-              darkMode ? 'hover:bg-white/[0.02]' : 'hover:bg-slate-50/50'
-            }`}>
+            <tr 
+              key={floor.id} 
+              id={`floor-row-${floor.id}`}
+              className={`group transition-all duration-500 ${
+                floor.id === selectedFloorId 
+                  ? (darkMode ? 'bg-purple-500/10 ring-1 ring-purple-500/30' : 'bg-purple-50 ring-1 ring-purple-200')
+                  : (darkMode ? 'hover:bg-white/[0.02]' : 'hover:bg-slate-50/50')
+              }`}
+            >
               <td className="p-2">
                 <input 
                   className={inputBaseClass}
@@ -85,50 +101,6 @@ export const FloorTable: React.FC<Props> = ({ floors, onUpdate, onDelete, darkMo
                   className={inputNumClass}
                   value={floor.shops}
                   onChange={(e) => onUpdate(floor.id, 'shops', Number(e.target.value))}
-                />
-              </td>
-              <td className="p-2">
-                <input 
-                  type="number"
-                  className={inputNumClass}
-                  value={floor.fb01Count}
-                  onChange={(e) => onUpdate(floor.id, 'fb01Count', Number(e.target.value))}
-                />
-              </td>
-              <td className="p-2">
-                <input 
-                  className={inputBaseClass}
-                  value={floor.fb01Type}
-                  onChange={(e) => onUpdate(floor.id, 'fb01Type', e.target.value)}
-                />
-              </td>
-              <td className="p-2">
-                <input 
-                  type="number"
-                  className={inputNumClass}
-                  value={floor.fb02Count}
-                  onChange={(e) => onUpdate(floor.id, 'fb02Count', Number(e.target.value))}
-                />
-              </td>
-              <td className="p-2">
-                <input 
-                  className={inputBaseClass}
-                  value={floor.fb02Type}
-                  onChange={(e) => onUpdate(floor.id, 'fb02Type', e.target.value)}
-                />
-              </td>
-              <td className="p-2">
-                <input 
-                  className={inputBaseClass}
-                  value={floor.customerFb}
-                  onChange={(e) => onUpdate(floor.id, 'customerFb', e.target.value)}
-                />
-              </td>
-              <td className="p-2">
-                <input 
-                  className={inputBaseClass}
-                  value={floor.gisId}
-                  onChange={(e) => onUpdate(floor.id, 'gisId', e.target.value)}
                 />
               </td>
               <td className="p-2">
@@ -175,7 +147,7 @@ export const FloorTable: React.FC<Props> = ({ floors, onUpdate, onDelete, darkMo
           darkMode ? 'bg-white/5 text-white border-white/10' : 'bg-slate-50 text-slate-900 border-slate-200'
         }`}>
           <tr>
-            <td colSpan={9} className={`p-4 text-right ${darkMode ? 'text-neutral-400' : 'text-slate-500'}`}>Σύνολα Μέτρων:</td>
+            <td colSpan={3} className={`p-4 text-right ${darkMode ? 'text-neutral-400' : 'text-slate-500'}`}>Σύνολα Μέτρων:</td>
             <td colSpan={3} className="p-4">
               <div className="flex gap-4">
                 <span className={`transition-colors duration-300 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>2": {totals['2"']}m</span>

@@ -10,6 +10,7 @@ const THEME_KEY = 'cable_app_theme';
 
 const App: React.FC = () => {
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+  const [selectedFloorId, setSelectedFloorId] = useState<string | null>(null);
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem(THEME_KEY);
     return saved ? saved === 'dark' : true;
@@ -210,11 +211,22 @@ const App: React.FC = () => {
               <div className={`backdrop-blur-3xl border rounded-[2.5rem] p-2 shadow-2xl transition-all ${
                 darkMode ? 'bg-white/[0.02] border-white/10' : 'bg-white border-slate-200 shadow-slate-200/40'
               }`}>
-                <FloorTable floors={floors} onUpdate={updateFloor} onDelete={deleteFloor} darkMode={darkMode} />
+                <FloorTable 
+                  floors={floors} 
+                  onUpdate={updateFloor} 
+                  onDelete={deleteFloor} 
+                  darkMode={darkMode} 
+                  selectedFloorId={selectedFloorId}
+                />
               </div>
             </div>
             <div className="lg:col-span-4">
-              <BuildingVisual floors={floors} darkMode={darkMode} />
+              <BuildingVisual 
+                floors={floors} 
+                darkMode={darkMode} 
+                onFloorSelect={setSelectedFloorId}
+                selectedFloorId={selectedFloorId}
+              />
             </div>
           </div>
         </main>

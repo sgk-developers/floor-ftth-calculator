@@ -4,9 +4,16 @@ import { FloorData } from '../types/cable';
 interface Props {
   floors: FloorData[];
   darkMode?: boolean;
+  onFloorSelect?: (id: string | null) => void;
+  selectedFloorId?: string | null;
 }
 
-export const BuildingVisual: React.FC<Props> = ({ floors, darkMode = true }) => {
+export const BuildingVisual: React.FC<Props> = ({ 
+  floors, 
+  darkMode = true, 
+  onFloorSelect, 
+  selectedFloorId 
+}) => {
   // Keep floors in original order (+00, +01, +02...) to match Y calculation
   const displayFloors = [...floors]; 
   const floorHeight = 70;
@@ -132,10 +139,27 @@ export const BuildingVisual: React.FC<Props> = ({ floors, darkMode = true }) => 
           {displayFloors.map((floor, index) => {
             const y = chartHeight - 110 - (index * floorHeight);
             const isCurrent = floor.meters > 0;
+            const isSelected = selectedFloorId === floor.id;
             const currentRiser = risers.find(r => r.type === floor.cableType);
 
             return (
-              <g key={floor.id} className="group">
+              <g 
+                key={floor.id} 
+                className="group cursor-pointer" 
+                onClick={() => onFloorSelect?.(isSelected ? null : floor.id)}
+              >
+                {/* Selection Highlight */}
+                {isSelected && (
+                  <rect 
+                    x="45" 
+                    y={y - 25} 
+                    width={buildingWidth + 10} 
+                    height={floorHeight - 10} 
+                    fill="rgba(168, 85, 247, 0.08)" 
+                    rx="12"
+                    className="animate-pulse"
+                  />
+                )}
                 <line 
                   x1="50" y1={y + 30} x2={buildingWidth + 50} y2={y + 30} 
                   stroke={darkMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"} 
@@ -150,12 +174,17 @@ export const BuildingVisual: React.FC<Props> = ({ floors, darkMode = true }) => 
                     width="40" 
                     height="35" 
                     rx="4" 
-                    fill={isCurrent 
-                      ? (darkMode ? 'rgba(168, 85, 247, 0.1)' : 'rgba(168, 85, 247, 0.1)') 
-                      : (darkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)')} 
-                    stroke={isCurrent 
-                      ? (darkMode ? 'rgba(168, 85, 247, 0.3)' : 'rgba(168, 85, 247, 0.4)') 
-                      : (darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)')} 
+                    fill={isSelected 
+                      ? 'rgba(168, 85, 247, 0.3)'
+                      : isCurrent 
+                        ? (darkMode ? 'rgba(168, 85, 247, 0.1)' : 'rgba(168, 85, 247, 0.1)') 
+                        : (darkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)')} 
+                    stroke={isSelected
+                      ? '#a855f7'
+                      : isCurrent 
+                        ? (darkMode ? 'rgba(168, 85, 247, 0.3)' : 'rgba(168, 85, 247, 0.4)') 
+                        : (darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)')} 
+                    className="transition-all duration-300 group-hover:stroke-purple-500/50"
                   />
                 ))}
 

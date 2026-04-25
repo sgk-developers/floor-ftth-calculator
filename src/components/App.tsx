@@ -39,7 +39,7 @@ const App: React.FC = () => {
   const addFloor = () => {
     const newFloor: FloorData = {
       id: Math.random().toString(36).substr(2, 9),
-      floor: `+0${floors.length}`,
+      floor: `+${floors.length.toString().padStart(2, '0')}`,
       apartments: 0,
       shops: 0,
       fb01Count: 0,
@@ -57,6 +57,29 @@ const App: React.FC = () => {
       cableType: ''
     };
     setFloors([...floors, newFloor]);
+  };
+
+  const addThreeFloors = () => {
+    const newFloors: FloorData[] = Array.from({ length: 3 }).map((_, i) => ({
+      id: Math.random().toString(36).substr(2, 9) + i,
+      floor: `+${(floors.length + i).toString().padStart(2, '0')}`,
+      apartments: 0,
+      shops: 0,
+      fb01Count: 0,
+      fb01Type: '',
+      fb02Count: 0,
+      fb02Type: '',
+      customerFb: '',
+      customerApt: '',
+      gisId: '',
+      fb04Type: '',
+      customerFb2: '',
+      customerRoomNumbering: '',
+      gisId2: '',
+      meters: 0,
+      cableType: ''
+    }));
+    setFloors([...floors, ...newFloors]);
   };
 
   const updateFloor = (id: string, field: keyof FloorData, value: any) => {
@@ -171,9 +194,23 @@ const App: React.FC = () => {
                   ? 'bg-purple-500/10 border-purple-500/30 text-purple-400 hover:bg-purple-500/20'
                   : 'bg-slate-950 border-slate-900 text-white hover:bg-slate-800 shadow-xl shadow-slate-950/20'
               }`}
+              title="Προσθήκη ενός ορόφου"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" /></svg>
-              Προσθηκη
+              +1
+            </button>
+
+            <button 
+              onClick={addThreeFloors}
+              className={`px-6 py-4 rounded-2xl font-black text-sm uppercase tracking-widest transition-all active:scale-95 flex items-center gap-3 border-2 ${
+                darkMode
+                  ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20'
+                  : 'bg-cyan-600 border-cyan-700 text-white hover:bg-cyan-700 shadow-xl shadow-cyan-900/20'
+              }`}
+              title="Προσθήκη τριών ορόφων"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" /></svg>
+              +3
             </button>
             
             <button 

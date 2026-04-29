@@ -4,12 +4,26 @@ import { DistributionPanel } from './DistributionPanel';
 import { FloorTable } from './FloorTable';
 import { BuildingVisual } from './BuildingVisual';
 import { ConfirmationModal } from './ConfirmationModal';
+import { AutopsiaPage } from './AutopsiaPage';
 
 const STORAGE_KEY = 'cable_app_data';
 const THEME_KEY = 'cable_app_theme';
 
+const FLOOR_TYPES = [
+  { id: 'floor', label: 'Όροφος' },
+  { id: 'ground', label: 'Ισόγειο' },
+  { id: 'underground', label: 'Υπόγειο' },
+  { id: 'roof', label: 'Δώμα' },
+  { id: 'mezzanine', label: 'Ημιώροφος' },
+  { id: 'lobby', label: 'Lobby' },
+  { id: 'pilotis', label: 'Pilotis' },
+  { id: 'engine', label: 'Μηχανοστάσιο' },
+];
+
 const App: React.FC = () => {
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+  const [view, setView] = useState<'main' | 'autopsia'>('main');
+  const [selectedFloorType, setSelectedFloorType] = useState('floor');
   const [selectedFloorId, setSelectedFloorId] = useState<string | null>(null);
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem(THEME_KEY);
@@ -36,50 +50,37 @@ const App: React.FC = () => {
     }
   }, [darkMode]);
 
-  const addFloor = () => {
+  const addSelectedFloor = () => {
+    let label = '';
+    const typeObj = FLOOR_TYPES.find(t => t.id === selectedFloorType);
+    
+    if (selectedFloorType === 'floor') {
+      const floorNumbers = floors
+        .filter(f => f.floor.startsWith('+'))
+        .map(f => parseInt(f.floor.substring(1)))
+        .filter(n => !isNaN(n));
+      const nextNum = floorNumbers.length > 0 ? Math.max(...floorNumbers) + 1 : 0;
+      label = `+${nextNum.toString().padStart(2, '0')}`;
+    } else if (selectedFloorType === 'underground') {
+      const hasHY = floors.some(f => f.floor === '-HY');
+      label = hasHY ? `-0${floors.filter(f => f.floor.startsWith('-') && f.floor !== '-HY').length + 1}` : '-HY';
+    } else {
+      label = typeObj?.label || 'Νέος Όροφος';
+    }
+
     const newFloor: FloorData = {
       id: Math.random().toString(36).substr(2, 9),
-      floor: `+${floors.length.toString().padStart(2, '0')}`,
-      apartments: 0,
-      shops: 0,
-      fb01Count: 0,
-      fb01Type: '',
-      fb02Count: 0,
-      fb02Type: '',
-      customerFb: '',
-      customerApt: '',
-      gisId: '',
-      fb04Type: '',
-      customerFb2: '',
-      customerRoomNumbering: '',
-      gisId2: '',
-      meters: 0,
-      cableType: ''
+      floor: label,
+      apartments: 0, shops: 0, fb01Count: 0, fb01Type: '', fb02Count: 0, fb02Type: '',
+      customerFb: '', customerApt: '', gisId: '', fb04Type: '', customerFb2: '',
+      customerRoomNumbering: '', gisId2: '', meters: 0, cableType: ''
     };
-    setFloors([...floors, newFloor]);
-  };
 
-  const addThreeFloors = () => {
-    const newFloors: FloorData[] = Array.from({ length: 3 }).map((_, i) => ({
-      id: Math.random().toString(36).substr(2, 9) + i,
-      floor: `+${(floors.length + i).toString().padStart(2, '0')}`,
-      apartments: 0,
-      shops: 0,
-      fb01Count: 0,
-      fb01Type: '',
-      fb02Count: 0,
-      fb02Type: '',
-      customerFb: '',
-      customerApt: '',
-      gisId: '',
-      fb04Type: '',
-      customerFb2: '',
-      customerRoomNumbering: '',
-      gisId2: '',
-      meters: 0,
-      cableType: ''
-    }));
-    setFloors([...floors, ...newFloors]);
+    if (selectedFloorType === 'underground') {
+      setFloors([newFloor, ...floors]);
+    } else {
+      setFloors([...floors, newFloor]);
+    }
   };
 
   const updateFloor = (id: string, field: keyof FloorData, value: any) => {
@@ -127,6 +128,10 @@ const App: React.FC = () => {
     link.click();
     document.body.removeChild(link);
   };
+
+  if (view === 'autopsia') {
+    return <AutopsiaPage onBack={() => setView('main')} darkMode={darkMode} />;
+  }
 
   return (
     <div className={`min-h-screen transition-all duration-500 p-4 md:p-8 font-sans selection:bg-purple-500/30 ${
@@ -187,32 +192,47 @@ const App: React.FC = () => {
               )}
             </button>
 
+            <div className={`flex items-center gap-2 p-1.5 rounded-[1.25rem] border-2 transition-all ${ 
+              darkMode ? 'bg-white/5 border-white/10' : 'bg-slate-100 border-slate-200'
+            }`}>
+              <select 
+                value={selectedFloorType}
+                onChange={(e) => setSelectedFloorType(e.target.value)}
+                className={`bg-transparent px-4 py-2 font-bold text-sm outline-none cursor-pointer ${ 
+                  darkMode ? 'text-white' : 'text-slate-900'
+                }`}
+              >
+                {FLOOR_TYPES.map(type => (
+                  <option key={type.id} value={type.id} className={darkMode ? 'bg-[#1a1a1a]' : 'bg-white'}>
+                    {type.label}
+                  </option>
+                ))}
+              </select>
+              <button 
+                onClick={addSelectedFloor}
+                className={`p-3 rounded-xl transition-all active:scale-90 flex items-center justify-center ${
+                  darkMode
+                    ? 'bg-purple-500 text-white hover:bg-purple-400 shadow-lg shadow-purple-500/20'
+                    : 'bg-slate-950 text-white hover:bg-slate-800 shadow-xl shadow-slate-950/20'
+                }`}
+                title="Προσθήκη Επιλεγμένου Τύπου"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" /></svg>
+              </button>
+            </div>
+            
             <button 
-              onClick={addFloor}
+              onClick={() => setView('autopsia')}
               className={`px-6 py-4 rounded-2xl font-black text-sm uppercase tracking-widest transition-all active:scale-95 flex items-center gap-3 border-2 ${
                 darkMode
                   ? 'bg-purple-500/10 border-purple-500/30 text-purple-400 hover:bg-purple-500/20'
-                  : 'bg-slate-950 border-slate-900 text-white hover:bg-slate-800 shadow-xl shadow-slate-950/20'
+                  : 'bg-white border-slate-200 text-purple-600 hover:bg-purple-50 shadow-lg shadow-purple-100'
               }`}
-              title="Προσθήκη ενός ορόφου"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" /></svg>
-              +1
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>
+              Αυτοψια
             </button>
 
-            <button 
-              onClick={addThreeFloors}
-              className={`px-6 py-4 rounded-2xl font-black text-sm uppercase tracking-widest transition-all active:scale-95 flex items-center gap-3 border-2 ${
-                darkMode
-                  ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20'
-                  : 'bg-cyan-600 border-cyan-700 text-white hover:bg-cyan-700 shadow-xl shadow-cyan-900/20'
-              }`}
-              title="Προσθήκη τριών ορόφων"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" /></svg>
-              +3
-            </button>
-            
             <button 
               onClick={exportToExcel}
               className={`px-6 py-4 rounded-2xl font-black text-sm uppercase tracking-widest transition-all active:scale-95 flex items-center gap-3 border-2 ${

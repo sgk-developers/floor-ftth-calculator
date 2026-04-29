@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 
 interface Props {
   isOpen: boolean;
@@ -9,6 +9,43 @@ interface Props {
 }
 
 export const ConfirmationModal: React.FC<Props> = ({ isOpen, onClose, onConfirm, title, message }) => {
+  const cancelButtonRef = useRef<HTMLButtonElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+
+      if (e.key === 'Tab') {
+        const focusableElements = modalRef.current?.querySelectorAll('button');
+        if (!focusableElements || focusableElements.length === 0) return;
+
+        const firstElement = focusableElements[0] as HTMLElement;
+        const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+
+        if (e.shiftKey) { // Shift + Tab
+          if (document.activeElement === firstElement) {
+            e.preventDefault();
+            lastElement.focus();
+          }
+        } else { // Tab
+          if (document.activeElement === lastElement) {
+            e.preventDefault();
+            firstElement.focus();
+          }
+        }
+      }
+    };
+
+    if (isOpen) {
+      window.addEventListener('keydown', handleKeyDown);
+      // Focus the cancel button when modal opens for accessibility
+      setTimeout(() => cancelButtonRef.current?.focus(), 100);
+    }
+
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   return (
@@ -17,10 +54,11 @@ export const ConfirmationModal: React.FC<Props> = ({ isOpen, onClose, onConfirm,
       <div 
         className="absolute inset-0 bg-black/60 backdrop-blur-md transition-opacity duration-300"
         onClick={onClose}
+        aria-hidden="true"
       />
       
       {/* Modal Card */}
-      <div className="relative w-full max-w-md overflow-hidden">
+      <div className="relative w-full max-w-md overflow-hidden" ref={modalRef}>
         <div className="backdrop-blur-2xl bg-[#121212]/90 border border-white/10 rounded-[2.5rem] p-8 shadow-[0_0_50px_-12px_rgba(168,85,247,0.3)] animate-in fade-in zoom-in duration-300">
           
           {/* Icon Header */}
@@ -44,13 +82,14 @@ export const ConfirmationModal: React.FC<Props> = ({ isOpen, onClose, onConfirm,
           <div className="flex flex-col gap-3">
             <button
               onClick={onConfirm}
-              className="w-full bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white font-bold py-4 rounded-2xl transition-all duration-300 shadow-xl shadow-purple-500/20 active:scale-95 uppercase tracking-wider text-sm"
+              className="w-full bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white font-bold py-4 rounded-2xl transition-all duration-300 shadow-xl shadow-purple-500/20 active:scale-95 uppercase tracking-wider text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50"
             >
               Εκκαθαριση Δεδομενων
             </button>
             <button
+              ref={cancelButtonRef}
               onClick={onClose}
-              className="w-full bg-white/5 border border-white/10 text-neutral-400 hover:bg-white/10 hover:text-white font-bold py-4 rounded-2xl transition-all duration-300 active:scale-95 text-sm"
+              className="w-full bg-white/5 border border-white/10 text-neutral-400 hover:bg-white/10 hover:text-white font-bold py-4 rounded-2xl transition-all duration-300 active:scale-95 text-sm focus:outline-none focus:ring-2 focus:ring-white/20"
             >
               Ακυρωση
             </button>

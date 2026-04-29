@@ -59,4 +59,40 @@
   .dark body {
     @apply bg-[#050505];
   }
+
+  @media print {
+    body {
+      background: white !important;
+      color: black !important;
+    }
+    
+    .dark body {
+      background: white !important;
+      color: black !important;
+    }
+
+    * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    /* Remove glassmorphism effects for print */
+    .backdrop-blur-3xl, .backdrop-blur-2xl {
+      backdrop-filter: none !important;
+      background: transparent !important;
+    }
+
+    /* Ensure inputs and textareas look like text in print */
+    input, textarea {
+      border: none !important;
+      padding: 0 !important;
+      background: transparent !important;
+      overflow: visible !important;
+    }
+
+    /* Hide scrollbars in print */
+    * {
+      overflow: visible !important;
+    }
+  }
 }

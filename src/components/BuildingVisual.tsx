@@ -34,6 +34,10 @@ export const BuildingVisual: React.FC<Props> = ({
     { type: '12"' as const, x: buildingWidth + 80, color: '#ef4444', label: '12"', glow: 'rgba(239, 68, 68, 0.5)' },
   ];
 
+  // Find the index of the first non-underground floor to draw the ground line
+  const groundFloorIndex = displayFloors.findIndex(f => !f.floor.startsWith('-')) || 0;
+  const groundY = chartHeight - 110 - (groundFloorIndex * floorHeight) + 30;
+
   return (
     <div className={`backdrop-blur-2xl border rounded-3xl p-6 md:p-8 shadow-2xl sticky top-8 transition-all duration-300 ${
       darkMode ? 'bg-white/[0.02] border-white/10' : 'bg-white/70 border-slate-200 shadow-slate-200/50'
@@ -74,9 +78,10 @@ export const BuildingVisual: React.FC<Props> = ({
             </filter>
           </defs>
 
-          <rect x="20" y={chartHeight - 40} width={buildingWidth + 120} height="40" rx="4" fill={darkMode ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"} />
-          <line x1="0" y1={chartHeight - 40} x2={totalWidth} y2={chartHeight - 40} stroke={darkMode ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.2)"} strokeWidth="2" />
-
+          {/* Ground Surface */}
+          <rect x="0" y={groundY} width={totalWidth} height={chartHeight - groundY} fill={darkMode ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.02)"} />
+          <line x1="0" y1={groundY} x2={totalWidth} y2={groundY} stroke={darkMode ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.3)"} strokeWidth="3" strokeDasharray="10 5" />
+          
           <rect 
             x="50" 
             y={40} 
